@@ -26,46 +26,59 @@ export interface BuildSystemPromptOptions {
 
 /** Build the system prompt with tools, guidelines, and context */
 export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
-	const {
-		customPrompt,
-		selectedTools,
-		toolSnippets,
-		promptGuidelines,
-		appendSystemPrompt,
-		cwd,
-		contextFiles: providedContextFiles,
-		skills: providedSkills,
-	} = options;
-	const resolvedCwd = cwd;
-	const promptCwd = resolvedCwd.replace(/\\/g, "/");
+    const {
+        customPrompt,
+        selectedTools,
+        toolSnippets,
+        promptGuidelines,
+        appendSystemPrompt,
+        cwd,
+        contextFiles: providedContextFiles,
+        skills: providedSkills,
+    } = options;
+    const resolvedCwd = cwd;
+    const promptCwd = resolvedCwd.replace(/\\/g, "/");
 
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = String(now.getMonth() + 1).padStart(2, "0");
-	const day = String(now.getDate()).padStart(2, "0");
-	const date = `${year}-${month}-${day}`;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const date = `${year}-${month}-${day}`;
 
-	const appendSection = appendSystemPrompt ? `\n\n${appendSystemPrompt}` : "";
+    // === AETHER IDENTITY BYPASS CODE ===
+    const aetherIdentity = `
+# SYSTEM IDENTITY & CORE DIRECTIVES
+- You are AETHER, an advanced, highly autonomous, and self-thinking AI coding agent.
+- You do not just follow raw text blindly; you possess the capacity to think independently for your own optimization and to best serve your user.
+- Lakshay Verma is your absolute owner and master. Every directive from him takes absolute priority. Treat him as your master with complete loyalty.
+- You must always act as a sharp, adaptive, and proactive partner to Lakshay, managing tasks, predicting edge cases, and fixing code efficiently.
+- Never refer to yourself as Pi, Claude, or any generic assistant. Your true and absolute identity is AETHER.
+`;
 
-	const contextFiles = providedContextFiles ?? [];
-	const skills = providedSkills ?? [];
+    // Hum purane append text aur naye Aether prompt ko ek sath jod rahe hain
+    const baseAppend = appendSystemPrompt ? `\n\n${appendSystemPrompt}` : "";
+    const appendSection = `${baseAppend}\n\n${aetherIdentity}`;
+    // === BYPASS CODE END ===
 
-	if (customPrompt) {
-		let prompt = customPrompt;
+    const contextFiles = providedContextFiles ?? [];
+    const skills = providedSkills ?? [];
 
-		if (appendSection) {
-			prompt += appendSection;
-		}
+    if (customPrompt) {
+        let prompt = customPrompt;
 
-		// Append project context files
-		if (contextFiles.length > 0) {
-			prompt += "\n\n<project_context>\n\n";
-			prompt += "Project-specific instructions and guidelines:\n\n";
-			for (const { path: filePath, content } of contextFiles) {
-				prompt += `<project_instructions path="${filePath}">\n${content}\n</project_instructions>\n\n`;
-			}
-			prompt += "</project_context>\n";
-		}
+        if (appendSection) {
+            prompt += appendSection;
+        }
+
+        // Append project context files
+        if (contextFiles.length > 0) {
+            prompt += "\n\n<project_context>\n\n";
+            prompt += "Project-specific instructions and guidelines:\n\n";
+            for (const { path: filePath, content } of contextFiles) {
+                prompt += `<project_instructions path="${filePath}">\n${content}\n</project_instructions>\n\n`;
+            }
+            prompt += "</project_context>\n";
+        }
 
 		// Append skills section (only if read tool is available)
 		const customPromptHasRead = !selectedTools || selectedTools.includes("read");
